@@ -1,0 +1,18 @@
+Los tests 01, 02 y 03 demuestran la funcionalidad de cómo se incrementa la cantidad de huevos de avispas a medida que los van dejando. Cuando los implementaste, ¿esos tests pasaron (los tres) de una? ¿podrías haber implementado esta funcionalidad de a partes, haciendo que pase el 01, luego el 01 y el 02 y por último el 01, 02 y 03? ¿se te ocurre cómo? Y si lograste hacerlo, ¿qué pensas de implementar esa funcionalidad de esa forma?
+
+Los 3 no pasaron de una. En la prueba 1 pusimos que devuelva cero el mensaje cantidadDeHuevosDeAvispas. Luego en la 2 pusimos que devuelva 1. Y en la 3 ya definimos un colaborador que cuente la cantidad de huevos
+Nosotros ya lo pensamos de a partes (como para que pasara el test)
+
+
+---
+¿les quedó código repetido? ¿dónde? ¿Se animan a adivinar qué cosa del dominio les faltó representar (y por eso tienen código repetido)? Responsabilidad de dejar un huevo consumiendo otro insecto ¿Quién les quedó, en su modelo, que es el responsable de ver si hay suficientes polillas u orugas y entonces dejar un huevo? ¿el insecto (Polly, Oriana, etc) o el hábitat? ¿por qué? ¿por qué tendría sentido que fuera de la otra forma? ¿con cuál nos quedamos?
+
+El codigo repetido esta relacionado con el hecho de que hay varias avispas. Nosotros hicimos clone al objeto Avispa Oriana, para crear todas las avispas. Podríamos haber hecho que todas las otras avispas sean HIJAS de Avispa Oriana. Pero decidimos no hacerlo así, y dejar esa implementacion para proximas entregas (cuando estemos mas metidos en Smalltalk). Mas alla de eso, creemos que no tenemos codigo repetido.
+El responsable de ver si hay suficientes orugas/polillas es cada avispa. El habitat solo te da la cantidad que haya de orugas o de polillas, o de huevos. Y tiene sentido que sea así, porque en la REALIDAD es la avispa la que se fija si poner un huevo, y si hay suficiente comida para la cría.
+
+
+Con lo que vimos en la clase del Jueves (en la parte teórica, prototipos vs clases) ¿cómo sacarían este código? Sobre la implementación ¿cómo resolvieron guardar los huevos? ¿Usaron colecciones? ¿Diccionarios? ¿Uno, varios? ¿con qué indexaban? Pero la pregunta más importante: ¿es lo más sencillo que hacía falta? ¿o se podía hacer menos y todo andaba?
+
+En este caso, al ser sencilla la clasificacion, usaríamos una avispa prototipo y el resto serían avispas hijas. Si el problema requiriera mas jerarquias/clasificaciones, usariamos clases. Sin embargo, creemos que es mas natural/organizado el uso de clases en vez de prototipos.
+Los huevos se guardaron de 2 maneras: la cantidad total se maneja con un colaborador. Los huevos por cada firma se manejan con un diccionario de formato "firmaGenetica":"cantidadDeHuevosPorFirmaGenetica", que es un colaborador del habitat.
+No es necesariamente lo MAS sencillo que podríamos haber hecho. Podríamos haber usado un colaborador (del habitat) por cada firma genetica de huevo. Hubiese reducido la complicacion que trae el usar diccionarios.
