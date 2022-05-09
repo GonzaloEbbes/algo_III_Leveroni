@@ -342,13 +342,43 @@ invalidNumberType
 	self error: self class invalidNumberTypeErrorDescription! !
 
 
-!Numero methodsFor: 'as yet unclassified' stamp: 'GET 5/5/2022 20:44:09'!
+!Numero methodsFor: 'private - doubleDispatch' stamp: 'GET 5/5/2022 20:44:09'!
 beAddedToEntero: anAugend
 
 	self subclassResponsibility.! !
 
-!Numero methodsFor: 'as yet unclassified' stamp: 'GET 5/5/2022 20:43:52'!
+!Numero methodsFor: 'private - doubleDispatch' stamp: 'GET 5/5/2022 20:43:52'!
 beAddedToFraccion: anAugend
+
+	self subclassResponsibility.! !
+
+!Numero methodsFor: 'private - doubleDispatch' stamp: 'GET 5/9/2022 19:41:05'!
+beMultipliedByEntero: aMultiplicand
+
+	self subclassResponsibility.! !
+
+!Numero methodsFor: 'private - doubleDispatch' stamp: 'GET 5/9/2022 19:43:41'!
+beMultipliedByFraccion: aMultiplicand
+
+	self subclassResponsibility.! !
+
+!Numero methodsFor: 'private - doubleDispatch' stamp: 'GET 5/9/2022 19:41:40'!
+divideAFraccion: aDividend
+
+	self subclassResponsibility.! !
+
+!Numero methodsFor: 'private - doubleDispatch' stamp: 'GET 5/9/2022 19:41:53'!
+divideAnEntero: aDividend
+
+	self subclassResponsibility.! !
+
+!Numero methodsFor: 'private - doubleDispatch' stamp: 'GET 5/9/2022 19:42:17'!
+substractsToAFraccion: aMinuend
+
+	self subclassResponsibility.! !
+
+!Numero methodsFor: 'private - doubleDispatch' stamp: 'GET 5/9/2022 19:42:34'!
+substractsToAnEntero: aMinuend
 
 	self subclassResponsibility.! !
 
