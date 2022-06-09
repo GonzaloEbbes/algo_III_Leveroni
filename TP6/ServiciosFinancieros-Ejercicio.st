@@ -550,33 +550,12 @@ balance
 	
 		] ifEmpty: [ 0 ].! !
 
-!Portfolio methodsFor: 'public' stamp: 'GET 6/9/2022 01:19:54'!
+!Portfolio methodsFor: 'public' stamp: 'GET 6/9/2022 02:17:24'!
 containsTransaction: aTransaction 
 	
 	accounts do: [:anAccount |
 		(anAccount containsTransaction: aTransaction) ifTrue: [^ true].].
-	^ false.
-	
-	"El ifTrue queda feo, pero usar detect y devolver size > 0 me parece mas feo todavia, pero por menos legible"
-	
-	"Abajo una posible salida con referencia de la cosa que deberia salir"
-	
-	"containsTransaction: aTransaction 
-	accounts detect: [ :anAccount | 
-		anAccount containsTransaction: aTransaction] 
-		ifFound: [^true] 
-		ifNone: [^false]
-
-
-
-
-nuevaAvispaConFirma: unaFirmaGenetica
-	| tipoAvispa |
-	
-	tipoAvispa := Avispa subclasses detect: [:anAvispaSubclass | 
-		anAvispaSubclass tengoFirmaGenetica: unaFirmaGenetica ].
-	
-	^tipoAvispa  enHabitat: self."! !
+	^ false.! !
 
 !Portfolio methodsFor: 'public' stamp: 'GET 6/6/2022 21:09:31'!
 initialize
