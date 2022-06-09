@@ -18,8 +18,8 @@ test04SearchingForATransactionInAnEmptyPortfolioReturnsFalse
 	
 	self assert: (portfolio containsTransaction: aTransaction) equals: false.! !
 
-!PortfolioTest methodsFor: 'contains transaction' stamp: 'GET 6/8/2022 23:28:24'!
-test05SearchingForATransactionOnAPortfolioThatContainsTheAccountThatRegisteredItReturnsTrue
+!PortfolioTest methodsFor: 'contains transaction' stamp: 'GET 6/9/2022 16:15:20'!
+test05SearchingForATransactionOnAPortfolioThatContainsTheAccountThatContainsTheTransactionReturnsTrue
 
 	| portfolio account aTransaction |
 	
@@ -33,8 +33,8 @@ test05SearchingForATransactionOnAPortfolioThatContainsTheAccountThatRegisteredIt
 	
 	self assert: (portfolio containsTransaction: aTransaction) equals: true.! !
 
-!PortfolioTest methodsFor: 'contains transaction' stamp: 'GET 6/8/2022 23:31:54'!
-test06SearchingForATransactionOnAPortfolioWhichContainsAPortfolioThatContainsTheTranstactionReturnsTrue
+!PortfolioTest methodsFor: 'contains transaction' stamp: 'GET 6/9/2022 16:12:14'!
+test06SearchingForATransactionOnAPortfolioWhichContainsAPortfolioThatContainsTheTransactionReturnsTrue
 
 	| portfolio account aTransaction anotherPortfolio |
 	
@@ -82,8 +82,8 @@ test08AskingTransactionsFromANonEmptyReceptiveAccountContainedInAPortfolioReturn
 	
 	self assert: transactions equals: (portfolio getTransactionsFrom: account).! !
 
-!PortfolioTest methodsFor: 'transactions from an account' stamp: 'GET 6/9/2022 01:23:28'!
-test09AskingTransactionsFromAReceptiveAccountCointainedInACointainedPortfolioReturnsTheReceptiveAccountTransactions
+!PortfolioTest methodsFor: 'transactions from an account' stamp: 'GET 6/9/2022 16:25:14'!
+test09AskingTransactionsFromAReceptiveAccountCointainedInAPortfolioCointainedInAPortfolioReturnsTheReceptiveAccountTransactions
 	| portfolio account anotherPortfolio transactions |
 	
 	portfolio := Portfolio new.
@@ -550,16 +550,26 @@ balance
 	
 		] ifEmpty: [ 0 ].! !
 
-!Portfolio methodsFor: 'public' stamp: 'GET 6/9/2022 02:17:24'!
+!Portfolio methodsFor: 'public' stamp: 'GET 6/9/2022 16:08:31'!
 containsTransaction: aTransaction 
-	
-	accounts do: [:anAccount |
-		(anAccount containsTransaction: aTransaction) ifTrue: [^ true].].
-	^ false.! !
+
+	accounts detect: [ :anAccount | 
+		anAccount containsTransaction: aTransaction.] 
+		ifFound: [:anAccount | ^true.] 
+		ifNone: [^false].! !
 
 !Portfolio methodsFor: 'public' stamp: 'GET 6/6/2022 21:09:31'!
 initialize
 	accounts := OrderedCollection new.! !
+
+!Portfolio methodsFor: 'public' stamp: 'GET 6/9/2022 16:41:31'!
+isOrContainesAccount: anAccount
+	self = anAccount ifTrue: [^ true].
+	
+	accounts do: [:anAccountFromPortfolio | 
+		^ (anAccountFromPortfolio isOrContainesAccount: anAccount ).].
+	
+	^ false.! !
 
 !Portfolio methodsFor: 'public' stamp: 'GET 6/9/2022 01:29:40'!
 transactions
@@ -571,18 +581,15 @@ transactions
 	^transactions.! !
 
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'GET 6/9/2022 01:31:51'!
-getTransactionsFrom: desiredAccount
-	self = desiredAccount ifTrue: [^ self transactions].
-	accounts do: [:anAccount|
-		anAccount class = ReceptiveAccount ifTrue: 
-							[anAccount = desiredAccount ifTrue:
-												[^ anAccount transactions.]].
-		anAccount class = Portfolio ifTrue: [^anAccount getTransactionsFrom: desiredAccount ]
-					]. 
+!Portfolio methodsFor: 'as yet unclassified' stamp: 'GET 6/9/2022 16:50:54'!
+getTransactionsFrom: expectedAccount
+	self = expectedAccount ifTrue: [^ self transactions].
 	
-	^self error: self class accountIsNotContained .
-	! !
+	accounts do: [:anAccount|
+		(anAccount isOrContainesAccount: 	expectedAccount ) 
+		ifTrue: [^anAccount getTransactionsFrom: expectedAccount ].].
+	
+	^self error: self class accountIsNotContained.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -622,6 +629,21 @@ containsTransaction: aTransaction
 	^ transactions includes: aTransaction 
 ! !
 
+!ReceptiveAccount methodsFor: 'main protocol' stamp: 'GET 6/4/2022 01:56:41'!
+counterpartIn: aTransfer
+	
+	aTransfer transactionCreditAccount = self ifTrue: [^aTransfer transactionDebitAccount ].
+	
+	aTransfer transactionDebitAccount = self ifTrue: [^aTransfer transactionCreditAccount ].! !
+
+!ReceptiveAccount methodsFor: 'main protocol' stamp: 'GET 6/9/2022 16:48:00'!
+getTransactionsFrom: expectedAccount
+	^ self transactions.! !
+
+!ReceptiveAccount methodsFor: 'main protocol' stamp: 'GET 6/9/2022 16:46:34'!
+isOrContainesAccount: anAccount
+	^ self = anAccount .! !
+
 !ReceptiveAccount methodsFor: 'main protocol' stamp: 'GET 6/2/2022 21:15:38'!
 register: aTransaction
 	
@@ -631,11 +653,3 @@ register: aTransaction
 transactions 
 
 	^ transactions copy! !
-
-
-!ReceptiveAccount methodsFor: 'new' stamp: 'GET 6/4/2022 01:56:41'!
-counterpartIn: aTransfer
-	
-	aTransfer transactionCreditAccount = self ifTrue: [^aTransfer transactionDebitAccount ].
-	
-	aTransfer transactionDebitAccount = self ifTrue: [^aTransfer transactionCreditAccount ].! !
