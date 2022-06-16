@@ -1,6 +1,6 @@
 !classDefinition: #AccountReportTest category: 'ServiciosFinancieros-Solucion'!
 TestCase subclass: #AccountReportTest
-	instanceVariableNames: 'destinationAccount originAccount transactionGenericAccount'
+	instanceVariableNames: 'destinationAccount originAccount transactionGenericAccount familyPortfolio myAccount childrenPortfolio'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Solucion'!
@@ -87,6 +87,36 @@ createExpectedReportOfEmptyAccount
 	
 ! !
 
+!AccountReportTest methodsFor: 'private' stamp: 'GFC 6/16/2022 03:25:58'!
+createTreeExpectedReportWith: nameOfAccount
+
+	| expectedReport |
+	expectedReport := OrderedCollection new.
+	expectedReport add: nameOfAccount.
+	^expectedReport.
+	! !
+
+!AccountReportTest methodsFor: 'private' stamp: 'GFC 6/16/2022 03:20:04'!
+createTreeExpectedReportWith: nameOfAccount with: nameOfSecondAccount
+
+	| expectedReport |
+	expectedReport := OrderedCollection new.
+	expectedReport add: nameOfAccount.
+	expectedReport add: nameOfSecondAccount.
+	^expectedReport.
+	! !
+
+!AccountReportTest methodsFor: 'private' stamp: 'GFC 6/16/2022 03:20:39'!
+createTreeExpectedReportWith: nameOfAccount with: nameOfSecondAccount with: nameOfThirdAccount
+
+	| expectedReport |
+	expectedReport := OrderedCollection new.
+	expectedReport add: nameOfAccount.
+	expectedReport add: nameOfSecondAccount.
+	expectedReport add: nameOfThirdAccount.
+	^expectedReport.
+	! !
+
 !AccountReportTest methodsFor: 'private' stamp: 'GFC 6/15/2022 00:17:44'!
 setTransactionAccountAndDoTrasactionOf19PesosNamed: classOfTransaction
 	transactionGenericAccount _ ReceptiveAccount new.
@@ -99,6 +129,28 @@ setTransferAccountsAndDoTransferOf19Pesos
 	originAccount _ ReceptiveAccount new.
 	destinationAccount _ ReceptiveAccount new.
 	Transfer amount: 19 * peso from: originAccount to: destinationAccount.
+	! !
+
+
+!AccountReportTest methodsFor: 'PortfolioTreePrinter Tests' stamp: 'GFC 6/16/2022 03:27:17'!
+test09ShowEmptyPortfolioTree
+	familyPortfolio := Portfolio named: 'Portfolio de la familia'.
+	self assert: (self createTreeExpectedReportWith:  'Portfolio de la familia') equals: (PortfolioTreePrinter of: familyPortfolio).
+	! !
+
+!AccountReportTest methodsFor: 'PortfolioTreePrinter Tests' stamp: 'GFC 6/16/2022 03:27:21'!
+test10ShowPortfolioWithOneAccount
+	myAccount := ReceptiveAccount named: 'Cuenta mia'.
+	familyPortfolio := Portfolio named: 'Portfolio de la familia' with: myAccount.
+	self assert: (self createTreeExpectedReportWith: 'Portfolio de la familia' with: '   Cuenta mia') equals: (PortfolioTreePrinter of: familyPortfolio).
+	! !
+
+!AccountReportTest methodsFor: 'PortfolioTreePrinter Tests' stamp: 'GFC 6/16/2022 03:27:24'!
+test11ShowPortfolioWithAnAccountAndAPortfolioInside
+	myAccount := ReceptiveAccount named: 'Cuenta mia'.
+	childrenPortfolio := Portfolio named: 'Portfolio de hijos'.
+	familyPortfolio := Portfolio named: 'Portfolio de la familia' with: myAccount with: childrenPortfolio.
+	self assert: (self createTreeExpectedReportWith: 'Portfolio de la familia' with: '   Cuenta mia' with: '   Portfolio de hijos' ) equals: (PortfolioTreePrinter of: familyPortfolio).
 	! !
 
 
@@ -512,10 +564,14 @@ test06CannotTransferAZeroAmount
 
 !classDefinition: #Account category: 'ServiciosFinancieros-Solucion'!
 Object subclass: #Account
-	instanceVariableNames: ''
+	instanceVariableNames: 'nameOfAccount'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Solucion'!
+
+!Account methodsFor: 'main protocol' stamp: 'GFC 6/16/2022 01:04:12'!
+accountsName
+	^nameOfAccount. ! !
 
 !Account methodsFor: 'main protocol' stamp: 'HAW 5/25/2019 12:23:40'!
 balance
@@ -549,6 +605,27 @@ addTransactionsTo: aCollectionOfTransactions
 
 	self subclassResponsibility ! !
 
+
+!Account methodsFor: 'initialization' stamp: 'GFC 6/15/2022 00:55:03'!
+initializeWithName: aNameOfAccount
+	nameOfAccount := aNameOfAccount.
+	! !
+
+
+!Account methodsFor: 'Visitor Pattern - private' stamp: 'GFC 6/16/2022 02:34:47'!
+defineReportAction: aReport
+	self subclassResponsibility ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Account class' category: 'ServiciosFinancieros-Solucion'!
+Account class
+	instanceVariableNames: ''!
+
+!Account class methodsFor: 'as yet unclassified' stamp: 'GFC 6/15/2022 01:00:01'!
+named: aNameofAccount
+	self subclassResponsibility. ! !
+
 
 !classDefinition: #Portfolio category: 'ServiciosFinancieros-Solucion'!
 Account subclass: #Portfolio
@@ -557,9 +634,15 @@ Account subclass: #Portfolio
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Solucion'!
 
-!Portfolio methodsFor: 'initialization' stamp: 'HAW 5/25/2019 12:03:18'!
+!Portfolio methodsFor: 'initialization' stamp: 'GFC 6/15/2022 00:46:41'!
 initialize
+	"super intialize: "
+	accounts := OrderedCollection new.
+	parents := OrderedCollection new.! !
 
+!Portfolio methodsFor: 'initialization' stamp: 'GFC 6/15/2022 00:49:19'!
+initializeWithName: aNameOfAccount
+	super initializeWithName: aNameOfAccount.
 	accounts := OrderedCollection new.
 	parents := OrderedCollection new.! !
 
@@ -584,6 +667,10 @@ transactions
 	
 	^transactions ! !
 
+
+!Portfolio methodsFor: 'accounts management' stamp: 'GFC 6/16/2022 01:14:44'!
+accounts
+	^accounts ! !
 
 !Portfolio methodsFor: 'accounts management' stamp: 'HAW 5/25/2019 11:49:20'!
 accountsIncludes: anAccount
@@ -659,6 +746,11 @@ signalCanNotAddAccount
 	
 	self error: self class canNotAddAccountErrorMessage! !
 
+
+!Portfolio methodsFor: 'Visitor Pattern - private' stamp: 'GFC 6/16/2022 02:36:03'!
+defineReportAction: aReport
+	aReport doReportActionInPortfolio: self.! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Portfolio class' category: 'ServiciosFinancieros-Solucion'!
@@ -669,6 +761,34 @@ Portfolio class
 canNotAddAccountErrorMessage
 	
 	^'Can not add repeated account to a portfolio'! !
+
+!Portfolio class methodsFor: 'as yet unclassified' stamp: 'GFC 6/15/2022 00:59:46'!
+named: aNameofAccount
+	| anAccount |
+	anAccount _ Portfolio new.
+	anAccount initializeWithName: aNameofAccount.
+	^anAccount! !
+
+!Portfolio class methodsFor: 'as yet unclassified' stamp: 'GFC 6/16/2022 01:25:56'!
+named: aNameOfAccount with: anAccount 
+
+	| aPortfolio |
+	aPortfolio _ Portfolio  new.
+	aPortfolio initializeWithName: aNameOfAccount.
+	aPortfolio add: anAccount.
+	^aPortfolio.
+	! !
+
+!Portfolio class methodsFor: 'as yet unclassified' stamp: 'GFC 6/15/2022 01:11:59'!
+named: aNameOfAccount with: anAccount with: anotherAccount
+
+	| aPortfolio |
+	aPortfolio _ Portfolio  new.
+	aPortfolio initializeWithName: aNameOfAccount.
+	aPortfolio add: anAccount.
+	aPortfolio add: anotherAccount.
+	^aPortfolio.
+	! !
 
 !Portfolio class methodsFor: 'as yet unclassified' stamp: 'HAW 5/25/2019 11:18:21'!
 with: anAccount
@@ -697,6 +817,12 @@ Account subclass: #ReceptiveAccount
 initialize
 
 	super initialize.
+	transactions := OrderedCollection new.! !
+
+!ReceptiveAccount methodsFor: 'initialization' stamp: 'GFC 6/15/2022 00:49:19'!
+initializeWithName: aNameOfAccount
+
+	super initializeWithName: aNameOfAccount.
 	transactions := OrderedCollection new.! !
 
 
@@ -741,6 +867,24 @@ isComposedBy: anAccount
 
 	^self = anAccount ! !
 
+
+!ReceptiveAccount methodsFor: 'Visitor Pattern - private' stamp: 'GFC 6/16/2022 02:36:25'!
+defineReportAction: aReport
+	aReport doReportActionInReceptiveAccount: self.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'ReceptiveAccount class' category: 'ServiciosFinancieros-Solucion'!
+ReceptiveAccount class
+	instanceVariableNames: ''!
+
+!ReceptiveAccount class methodsFor: 'as yet unclassified' stamp: 'GFC 6/15/2022 00:59:35'!
+named: aNameofAccount
+	| anAccount |
+	anAccount _ ReceptiveAccount new.
+	anAccount initializeWithName: aNameofAccount.
+	^anAccount! !
+
 
 !classDefinition: #AccountReport category: 'ServiciosFinancieros-Solucion'!
 Object subclass: #AccountReport
@@ -764,6 +908,14 @@ report
 doReportActionInDeposit: aDepositValue
 	self subclassResponsibility .! !
 
+!AccountReport methodsFor: 'DD Visitor Pattern - private' stamp: 'GFC 6/16/2022 02:39:32'!
+doReportActionInPortfolio: aPortfolio
+	self subclassResponsibility.! !
+
+!AccountReport methodsFor: 'DD Visitor Pattern - private' stamp: 'GFC 6/16/2022 02:40:12'!
+doReportActionInReceptiveAccount: aReceptiveAccount
+	self subclassResponsibility.! !
+
 !AccountReport methodsFor: 'DD Visitor Pattern - private' stamp: 'GFC 6/14/2022 22:01:33'!
 doReportActionInTransferDepositLeg: aTransferDepositLegValue
 	self subclassResponsibility .! !
@@ -782,13 +934,13 @@ doReportActionInWithdraw: aWithdrawValue
 AccountReport class
 	instanceVariableNames: ''!
 
-!AccountReport class methodsFor: 'as yet unclassified' stamp: 'GFC 6/14/2022 21:08:42'!
+!AccountReport class methodsFor: 'as yet unclassified' stamp: 'GFC 6/15/2022 01:20:27'!
 of: account
-	| netReport |
+	| accountReport |
 	
-	netReport _ self new initializeWith: account.
+	accountReport _ self new initializeWith: account.
 	
-	^netReport report. ! !
+	^accountReport report. ! !
 
 
 !classDefinition: #AccountSummary category: 'ServiciosFinancieros-Solucion'!
@@ -798,25 +950,11 @@ AccountReport subclass: #AccountSummary
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Solucion'!
 
-!AccountSummary methodsFor: 'public' stamp: 'GFC 6/14/2022 21:53:59'!
+!AccountSummary methodsFor: 'public' stamp: 'GFC 6/16/2022 02:32:14'!
 report
 	reportAccount transactions do: [:aTransaction |
 		aTransaction defineReportAction: self.
-		"(aTransaction class = Deposit) ifTrue: [
-			report add: ('Depósito por ',(aTransaction value asString))
-			].
-		(aTransaction class = Withdraw ) ifTrue: [
-			report add: ('Extracción por ',(aTransaction value asString))
-			].
-		(aTransaction class = TransferWithdrawLeg ) ifTrue: [
-			report add: ('Salida por transferencia de ',(aTransaction value asString))
-			].
-		(aTransaction class = TransferDepositLeg ) ifTrue: [
-			report add: ('Entrada por transferencia de ',(aTransaction value asString))
-			]."
-		].
-	
-	
+	].
 	summaryLines add: ('Balance = ',(reportAccount balance) asString).
 	^summaryLines! !
 
@@ -844,6 +982,61 @@ initializeWith: account
 	summaryLines := OrderedCollection new.
 	
 	! !
+
+
+!classDefinition: #PortfolioTreePrinter category: 'ServiciosFinancieros-Solucion'!
+AccountReport subclass: #PortfolioTreePrinter
+	instanceVariableNames: 'treePrintingCollection numberOfRecursiveLevel'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ServiciosFinancieros-Solucion'!
+
+!PortfolioTreePrinter methodsFor: 'private' stamp: 'GFC 6/16/2022 02:58:49'!
+indentationLevel
+	| indentation |
+	indentation _ String new.
+	numberOfRecursiveLevel timesRepeat: [indentation := indentation appendToString: '   '].
+	^indentation ! !
+
+
+!PortfolioTreePrinter methodsFor: 'public' stamp: 'GFC 6/16/2022 04:02:52'!
+printAccount: anAccountToPrint
+
+	anAccountToPrint defineReportAction: self.
+	
+	! !
+
+!PortfolioTreePrinter methodsFor: 'public' stamp: 'GFC 6/16/2022 03:00:59'!
+printAccount: anAccountToPrint ofTreeDepthLevel: numberOfRecursiveLevels
+
+	anAccountToPrint defineReportAction: self.
+	
+	! !
+
+!PortfolioTreePrinter methodsFor: 'public' stamp: 'GFC 6/16/2022 04:03:11'!
+report
+	treePrintingCollection := OrderedCollection new.
+	numberOfRecursiveLevel  := 0.
+	self printAccount: reportAccount.
+	^treePrintingCollection 
+	
+	
+	
+	! !
+
+
+!PortfolioTreePrinter methodsFor: 'DD Visitor Pattern - private' stamp: 'GFC 6/16/2022 02:59:15'!
+doReportActionInPortfolio: aPortfolio
+	treePrintingCollection add: ((self indentationLevel) ,(aPortfolio accountsName)).
+		aPortfolio accounts do: [ :anAccount | 
+			numberOfRecursiveLevel  _ numberOfRecursiveLevel  + 1.
+			self printAccount: anAccount ofTreeDepthLevel: numberOfRecursiveLevel.
+			numberOfRecursiveLevel _ numberOfRecursiveLevel  - 1.
+			]! !
+
+!PortfolioTreePrinter methodsFor: 'DD Visitor Pattern - private' stamp: 'GFC 6/16/2022 02:59:07'!
+doReportActionInReceptiveAccount: aReceptiveAccount
+	treePrintingCollection add: ((self indentationLevel) ,(aReceptiveAccount accountsName)).! !
 
 
 !classDefinition: #TransferNetReport category: 'ServiciosFinancieros-Solucion'!
@@ -876,19 +1069,10 @@ initializeWith: account
 	netTransferCount _ 0.! !
 
 
-!TransferNetReport methodsFor: 'public' stamp: 'GFC 6/14/2022 22:53:47'!
+!TransferNetReport methodsFor: 'public' stamp: 'GFC 6/16/2022 00:43:59'!
 report
-	"| netTransferCount |
-	netTransferCount _ 0."
 	reportAccount transactions do: [:aTransaction |
-		aTransaction defineReportAction: self.
-		"(aTransaction class = TransferWithdrawLeg ) ifTrue: [
-			netTransferCount := netTransferCount - (aTransaction value).
-			].
-		(aTransaction class = TransferDepositLeg ) ifTrue: [
-			netTransferCount := netTransferCount + (aTransaction value).
-			]."
-		
+		aTransaction defineReportAction: self.		
 		].
 	^netTransferCount .! !
 
@@ -900,10 +1084,6 @@ Object subclass: #AccountTransaction
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Solucion'!
 
-!AccountTransaction methodsFor: 'value' stamp: 'GFC 6/14/2022 21:53:59'!
-defineReportAction: aReport
-	self subclassResponsibility ! !
-
 !AccountTransaction methodsFor: 'value' stamp: 'HernanWilkinson 9/12/2011 12:25'!
 value 
 
@@ -913,6 +1093,11 @@ value
 !AccountTransaction methodsFor: 'balance' stamp: 'HAW 5/25/2019 11:25:39'!
 affectBalance: aBalance
 
+	self subclassResponsibility ! !
+
+
+!AccountTransaction methodsFor: 'Visitor Patern - private' stamp: 'GFC 6/14/2022 21:53:59'!
+defineReportAction: aReport
 	self subclassResponsibility ! !
 
 
@@ -929,10 +1114,6 @@ initializeFor: aValue
 	value := aValue ! !
 
 
-!Deposit methodsFor: 'value' stamp: 'GFC 6/14/2022 22:54:32'!
-defineReportAction: aReport
-	aReport doReportActionInDeposit: self.! !
-
 !Deposit methodsFor: 'value' stamp: 'HernanWilkinson 7/13/2011 18:38'!
 value
 
@@ -943,6 +1124,11 @@ value
 affectBalance: aBalance
 
 	^aBalance + value ! !
+
+
+!Deposit methodsFor: 'Visitor Pattern - private' stamp: 'GFC 6/14/2022 22:54:32'!
+defineReportAction: aReport
+	aReport doReportActionInDeposit: self.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -974,10 +1160,6 @@ AccountTransaction subclass: #TransferLeg
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Solucion'!
 
-!TransferLeg methodsFor: 'value' stamp: 'GFC 6/14/2022 21:53:59'!
-defineReportAction: aReport
-	self subclassResponsibility .! !
-
 !TransferLeg methodsFor: 'value' stamp: 'LL 9/20/2020 22:27:32'!
 value
 
@@ -988,6 +1170,11 @@ value
 initializeWith: aTransfer
 
 	transfer := aTransfer! !
+
+
+!TransferLeg methodsFor: 'Visitor Patern - private' stamp: 'GFC 6/14/2022 21:53:59'!
+defineReportAction: aReport
+	self subclassResponsibility .! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1013,10 +1200,6 @@ TransferLeg subclass: #TransferDepositLeg
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Solucion'!
 
-!TransferDepositLeg methodsFor: 'accessing' stamp: 'GFC 6/14/2022 22:55:27'!
-defineReportAction: aReport
-	aReport doReportActionInTransferDepositLeg: self .! !
-
 !TransferDepositLeg methodsFor: 'accessing' stamp: 'LL 9/20/2020 22:26:10'!
 withdrawLeg
 
@@ -1028,6 +1211,11 @@ affectBalance: aBalance
 
 	^aBalance + self value! !
 
+
+!TransferDepositLeg methodsFor: 'Visitor Patern - private' stamp: 'GFC 6/14/2022 22:55:27'!
+defineReportAction: aReport
+	aReport doReportActionInTransferDepositLeg: self .! !
+
 
 !classDefinition: #TransferWithdrawLeg category: 'ServiciosFinancieros-Solucion'!
 TransferLeg subclass: #TransferWithdrawLeg
@@ -1036,9 +1224,10 @@ TransferLeg subclass: #TransferWithdrawLeg
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Solucion'!
 
-!TransferWithdrawLeg methodsFor: 'accessing' stamp: 'GFC 6/14/2022 22:55:37'!
+!TransferWithdrawLeg methodsFor: 'Visitor Patern - private' stamp: 'GFC 6/14/2022 22:55:37'!
 defineReportAction: aReport
 	aReport doReportActionInTransferWithdrawLeg: self.! !
+
 
 !TransferWithdrawLeg methodsFor: 'accessing' stamp: 'LL 9/20/2020 22:25:47'!
 depositLeg
@@ -1065,10 +1254,6 @@ initializeFor: aValue
 	value := aValue ! !
 
 
-!Withdraw methodsFor: 'value' stamp: 'GFC 6/14/2022 22:55:43'!
-defineReportAction: aReport
-	aReport doReportActionInWithdraw: self .! !
-
 !Withdraw methodsFor: 'value' stamp: 'HernanWilkinson 7/13/2011 18:33'!
 value
 
@@ -1079,6 +1264,11 @@ value
 affectBalance: aBalance
 
 	^aBalance - value! !
+
+
+!Withdraw methodsFor: 'Visitor Patern - private' stamp: 'GFC 6/14/2022 22:55:43'!
+defineReportAction: aReport
+	aReport doReportActionInWithdraw: self .! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
